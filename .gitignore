@@ -1,0 +1,85 @@
+!smartgridreact/
+!smartgridreact/**
+
+# ---------------------------
+# Node / React / Electron
+# ---------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+dist/
+build/
+out/
+.release/
+
+# Electron builder output
+release/
+*.asar
+
+# ---------------------------
+# Python / FastAPI Backend
+# ---------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+.env.*
+*.db
+*.sqlite3
+
+# ---------------------------
+# OS Generated Files
+# ---------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---------------------------
+# IDE / Editor
+# ---------------------------
+.vscode/
+.idea/
+*.swp
+
+# ---------------------------
+# Logs
+# ---------------------------
+*.log
+logs/
+log/
+
+# ---------------------------
+# Testing
+# ---------------------------
+coverage/
+coverage.json
+pytest_cache/
+
+# ---------------------------
+# Cache & Temporary Files
+# ---------------------------
+.cache/
+.tmp/
+temp/
+
+# ---------------------------
+# Environment & Secrets
+# ---------------------------
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+
+# ---------------------------
+# Misc (Optional but recommended)
+# ---------------------------
+.sass-cache/
+.parcel-cache/
+.next/
+.eslintcache
+*.tsbuildinfo

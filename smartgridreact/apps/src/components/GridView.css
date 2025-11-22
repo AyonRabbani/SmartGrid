@@ -1,0 +1,179 @@
+/* ============================================
+   GRID WRAPPER
+============================================ */
+.grid-wrapper {
+  width: 100%;
+  height: 100%;
+  background: #0d0d0d;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow: auto;
+}
+
+/* ============================================
+   MAIN SPREADSHEET CONTAINER
+============================================ */
+.grid-spreadsheet {
+  display: grid;
+
+  /* gridTemplateColumns and Rows will come from JSX */
+  width: max-content;
+  height: max-content;
+
+  background-color: #0f0f0f;
+  border: 1px solid #1a1a1a;
+  position: relative;
+  font-family: "JetBrains Mono", monospace;
+  color: #e6e6e6;
+
+  /* Prevent shrinking on zoom */
+  transform: translateZ(0);
+}
+
+/* ============================================
+   COLUMN + ROW HEADERS
+============================================ */
+.grid-col-header,
+.grid-row-header {
+  background: #111;
+  color: #8f8f8f;
+  font-weight: 600;
+  border: 0.5px solid #222;
+  text-align: center;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: color 120ms ease-out, text-shadow 120ms ease-out;
+}
+
+.grid-col-header:hover,
+.grid-row-header:hover {
+  color: #00c8ff;
+  text-shadow: 0 0 4px rgba(0, 200, 255, 0.5);
+}
+
+/* ============================================
+   BASE CELL BOXES
+============================================ */
+.grid-cell {
+  border: 0.5px solid #222;
+  background: #151515;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  position: relative;
+  z-index: 1;
+  transition: background 80ms ease-out;
+}
+
+.grid-cell:hover {
+  background: #1d1d1d;
+}
+
+/* ============================================
+   INPUT STYLING
+============================================ */
+.grid-cell input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 4px 6px;
+  font-size: 13px;
+  font-family: "JetBrains Mono", monospace;
+  color: #d0d0d0;
+  box-sizing: border-box;
+  letter-spacing: 0.2px;
+}
+
+/* ============================================
+   CROSSHAIR HIGHLIGHT
+============================================ */
+.cross-row {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.cross-col {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.cross-focus {
+  background: #2e2e2e !important;
+  outline: 1px solid rgba(0, 200, 255, 0.35);
+  outline-offset: -1px;
+  z-index: 2;
+}
+
+/* ============================================
+   SELECTION FILL
+============================================ */
+.selected-cell {
+  background: rgba(80, 255, 120, 0.25) !important;
+  z-index: 3;
+}
+
+/* ============================================
+   SELECTION OUTLINE BOX
+============================================ */
+.selection-outline {
+  position: absolute;
+  border: 1px solid rgba(255, 145, 0, 0.85);
+  border-radius: 1px;
+  box-shadow: 0 0 3px rgba(255, 145, 0, 0.85);
+  pointer-events: none;
+  z-index: 9999;
+  transition: top 80ms ease, left 80ms ease, width 80ms ease, height 80ms ease;
+}
+
+/* ============================================
+   FORMULA / TICKER / ERROR
+============================================ */
+.grid-cell input[value^="="] {
+  color: #82d2ff;
+  text-shadow: 0 0 3px rgba(0, 200, 255, 0.25);
+}
+
+.grid-cell input[value*="ERROR"],
+.grid-cell input[value*="INVALID"],
+.grid-cell input[value*="CIRCULAR"] {
+  color: #ff5757;
+  font-weight: 600;
+  text-shadow: 0 0 4px rgba(255,87,87,0.35);
+}
+
+/* tickers heuristic */
+.grid-cell input[value^="A"],
+.grid-cell input[value^="B"],
+.grid-cell input[value^="C"],
+.grid-cell input[value^="D"],
+.grid-cell input[value^="E"],
+.grid-cell input[value^="F"],
+.grid-cell input[value^="G"],
+.grid-cell input[value^="H"],
+.grid-cell input[value^="I"],
+.grid-cell input[value^="J"],
+.grid-cell input[value^="K"],
+.grid-cell input[value^="L"],
+.grid-cell input[value^="M"],
+.grid-cell input[value^="N"],
+.grid-cell input[value^="O"],
+.grid-cell input[value^="P"],
+.grid-cell input[value^="Q"],
+.grid-cell input[value^="R"],
+.grid-cell input[value^="S"],
+.grid-cell input[value^="T"],
+.grid-cell input[value^="U"],
+.grid-cell input[value^="V"],
+.grid-cell input[value^="W"],
+.grid-cell input[value^="X"],
+.grid-cell input[value^="Y"],
+.grid-cell input[value^="Z"] {
+  color: #9afcb7;
+  text-shadow: 0 0 3px rgba(0,255,170,0.35);
+}
