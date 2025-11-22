@@ -399,8 +399,8 @@ export default function GridView() {
         clientWidth,
       } = el;
 
-      if (scrollTop + clientHeight >= scrollHeight - 50) setRows((r) => r + 5);
-      if (scrollLeft + clientWidth >= scrollWidth - 100) setCols((c) => c + 3);
+      if (scrollHeight - (scrollTop + clientHeight) < 100) setRows((r) => r + 5);
+      if (scrollWidth - (scrollLeft + clientWidth) < 200) setCols((c) => c + 3);
     }
 
     el.addEventListener("scroll", handleScroll);
@@ -411,6 +411,20 @@ export default function GridView() {
   /*  EXTEND GRID WHEN SIZE GROWS */
   /********************************/
   useEffect(() => {
+
+    // Expand CSS selection mask
+    setSelectedCSS((prev) => {
+      const newCSS = prev.map((row) => [...row]);
+      while (newCSS.length < rows)
+        newCSS.push(Array.from({ length: cols }, () => null));
+
+      for (let r = 0; r < newCSS.length; r++) {
+        while (newCSS[r].length < cols) newCSS[r].push(null);
+      }
+
+      return newCSS;
+    });
+
     // Expand grid when rows/cols increase
     setGrid((prev) => {
       const newGrid = prev.map((row) => [...row]);
@@ -427,18 +441,7 @@ export default function GridView() {
       return newGrid;
     });
 
-    // Expand CSS selection mask
-    setSelectedCSS((prev) => {
-      const newCSS = prev.map((row) => [...row]);
-      while (newCSS.length < rows)
-        newCSS.push(Array.from({ length: cols }, () => null));
 
-      for (let r = 0; r < newCSS.length; r++) {
-        while (newCSS[r].length < cols) newCSS[r].push(null);
-      }
-
-      return newCSS;
-    });
   }, [rows, cols]);
 
   /********************************/
@@ -492,8 +495,9 @@ export default function GridView() {
                     startSelectionCell.cellIndex,
                     endSelectionCell.cellIndex
                   );
-                console.log("ERROR INDICES :", rowIndex, cellIndex)
-                const cell = grid ? grid[rowIndex][cellIndex] : null; 
+
+                const safeRow = grid[rowIndex] || []; 
+                const cell = safeRow[cellIndex] || {raw: "", value: ""}; 
 
                 return (
                   <div
@@ -504,7 +508,7 @@ export default function GridView() {
                       (hover?.row === rowIndex ? "cross-row " : "") +
                       (hover?.col === cellIndex ? "cross-col " : "") +
                       (hover?.row === rowIndex && hover?.col === cellIndex ? "cross-focus " : "") +
-                      (selectedCSS[rowIndex][cellIndex] ? "selected-cell " : "") +
+                      (selectedCSS[rowIndex] && selectedCSS[rowIndex][cellIndex] ? "selected-cell " : "") +
                       (pickMode &&
                         editing &&
                         editing.rowIndex === rowIndex &&
