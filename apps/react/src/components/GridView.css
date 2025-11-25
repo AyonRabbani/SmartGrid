@@ -177,3 +177,102 @@
   color: #9afcb7;
   text-shadow: 0 0 3px rgba(0,255,170,0.35);
 }
+
+/* FLOATING PANELS */
+
+.floating-panels {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #111;
+  border-top: 1px solid #333;
+  z-index: 99999;
+}
+
+.panel-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #1c1c1c;
+  border-bottom: 1px solid #333;
+}
+
+.panel-tab {
+  padding: 4px 10px;
+  background: #2c2c2c;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  color: #ccc;
+}
+
+.panel-tab.active {
+  background: #3f3f3f;
+  color: #fff;
+}
+
+.panel-close {
+  margin-left: 6px;
+  color: #999;
+  cursor: pointer;
+}
+
+.panel-content {
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+
+.floating-panels {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #111;
+  border-top: 1px solid #333;
+  z-index: 9999;
+}
+
+.panel-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #1c1c1c;
+  border-bottom: 1px solid #333;
+}
+
+.panel-collapse-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.floating-panels {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #111;
+  border-top: 1px solid #333;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  transition: height 0.15s ease-out;
+}
+
+.panel-resize-handle {
+  height: 6px;
+  background: #333;
+  cursor: ns-resize;
+  width: 100%;
+  border-top: 1px solid #444;
+}
+
+.panel-resize-handle:hover {
+  background: #555;
+}

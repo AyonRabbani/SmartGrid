@@ -57,6 +57,14 @@ export default function GridView() {
 
   const [activeTickers, setActiveTickers] = useState([]);
 
+  const [panels, setPanels] = useState([]);
+  const [collapsed, setCollapsed] = useState(false);
+  // Example: [{ id: "TICKERS", title: "Tickers", component: <TickerPanel /> }]
+  const [activePanel, setActivePanel] = useState(null);
+  // Resizable panel height
+  const [panelHeight, setPanelHeight] = useState(320); // default height
+  const resizing = useRef(false);
+
   /********************************/
   /*        TICKER FUNCTIONS      */
   /********************************/
@@ -495,12 +503,12 @@ export default function GridView() {
       setGrid((prevGrid) => {
         const gridCopy = prevGrid.map((row) => [...row]);
         const xDist = clipboard.maxCell - clipboard.minCell;
-        const yDist = clipboard.minRow - clipboard.maxRow;
-        const rowOffset = editing.rowIndex - clipboard.minRow
-        const cellOffset = editing.cellIndex - clipboard.minCell
-        
+        const yDist = clipboard.maxRow - clipboard.minRow;
+        const rowOffset = editing.rowIndex - clipboard.minRow;
+        const cellOffset = editing.cellIndex - clipboard.minCell;
+
         let copyCell;
-        
+
         for (
           let r = 0, rC = clipboard.minRow;
           r <= xDist, rC <= clipboard.maxRow;
@@ -511,19 +519,24 @@ export default function GridView() {
             c <= yDist, cC <= clipboard.maxCell;
             c++, cC++
           ) {
-            copyCell = { ...gridCopy[rC][cC] }; // direct paste of cell values 
-            const isFormula = copyCell.raw.startsWith("=")? true: null;
-            if(isFormula){
-              const refFormula = copyCell.raw
-              const refs = extractReferences(refFormula)
-              refs.map(r => {
-                const refCoord = reverseCellRef(r)
-                const newRow = refCoord.r + rowOffset
-                const newCell = refCoord.c + cellOffset
-                const updatedRef = makeCellRef(newRow, newCell)
-                copyCell.raw = copyCell.raw.replace(r, updatedRef)
-              })
-            }       
+            copyCell = { ...gridCopy[rC][cC] }; // direct paste of cell values
+            const isFormula = copyCell.raw.startsWith("=") ? true : null;
+            if (copyCell.raw.startsWith("=")) {
+              copyCell.raw = copyCell.raw.replace(
+                /([A-Z]+)(\d+)/g,
+                (match, colLetters, rowDigits) => {
+                  const pos = reverseCellRef(match);
+                  if (!pos) return match;
+
+                  const newR = pos.r + rowOffset;
+                  const newC = pos.c + cellOffset;
+
+                  if (newR < 0 || newC < 0) return "#REF!";
+
+                  return makeCellRef(newR, newC);
+                }
+              );
+            }
             gridCopy[editing.rowIndex + r][editing.cellIndex + c] = copyCell;
           }
         }
@@ -533,10 +546,66 @@ export default function GridView() {
   }
 
   /********************************/
+  // PANEL FUNCTIONS
+  /********************************/
+  function openPanel(id, title) {
+    setPanels((prev) => {
+      if (prev.some((p) => p.id === id)) {
+        setActivePanel(id);
+        return prev;
+      }
+      return [...prev, { id, title }];
+    });
+    setActivePanel(id);
+  }
+
+  function closePanel(id) {
+    setPanels((prev) => prev.filter((p) => p.id !== id));
+    setActivePanel((prev) => (prev === id ? null : prev));
+  }
+
+  useEffect(() => {
+    if (activeTickers.length > 0) {
+      openPanel("TICKER_PANEL", "Tickers");
+    }
+  }, [activeTickers]);
+
+  /********************************/
+  /*       PANEL RESIZE LOGIC     */
+  /********************************/
+  function startResize(e) {
+    e.preventDefault();
+    resizing.current = true;
+  }
+
+  useEffect(() => {
+    function onMouseMove(e) {
+      if (!resizing.current) return;
+
+      const newHeight = window.innerHeight - e.clientY;
+      if (newHeight > 80 && newHeight < window.innerHeight - 100) {
+        setPanelHeight(newHeight);
+      }
+    }
+
+    function onMouseUp() {
+      resizing.current = false;
+    }
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, []);
+
+  /********************************/
   /*            RENDER            */
   /********************************/
   return (
-    <div>
+    <div className="grid-container">
       {/* <TickerGrid tickers={activeTickers} /> */}
       <div className="grid-wrapper" ref={gridRef}>
         <div
@@ -561,7 +630,7 @@ export default function GridView() {
           {/* Data rows: row header + cells */}
           {Array.from({ length: rows }, (_, rowIndex) => (
             <React.Fragment key={`row-${rowIndex}`}>
-              <div className="grid-row-header">{rowIndex +1}</div>
+              <div className="grid-row-header">{rowIndex + 1}</div>
               {Array.from({ length: cols }, (_, cellIndex) => {
                 const isDraggingOver =
                   selection &&
@@ -719,6 +788,52 @@ export default function GridView() {
           )}
         </div>
       </div>
+
+      <div
+        className="floating-panels"
+        style={{
+          height: collapsed ? "42px" : `${panelHeight}px`,
+        }}
+      >
+        {!collapsed && (
+          <div className="panel-resize-handle" onMouseDown={startResize} />
+        )}
+
+        <div className="panel-tabs">
+          <button
+            className="panel-collapse-btn"
+            onClick={() => setCollapsed((prev) => !prev)}
+          >
+            {collapsed ? "▲" : "▼"}
+          </button>
+          {panels.map((p) => (
+            <div
+              key={p.id}
+              className={`panel-tab ${activePanel === p.id ? "active" : ""}`}
+              onClick={() => setActivePanel(p.id)}
+            >
+              {p.title}
+              <span
+                className="panel-close"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closePanel(p.id);
+                }}
+              >
+                ×
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {activePanel && !collapsed && (
+          <div className="panel-content">
+            {activePanel === "TICKER_PANEL" && (
+              <TickerPanel tickers={activeTickers} />
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -726,7 +841,7 @@ export default function GridView() {
 /********************************/
 /*         Ticker Panel         */
 /********************************/
-function TickerGrid({ tickers }) {
+function TickerPanel({ tickers }) {
   return (
     <div>
       <h1>Ticker list:</h1>
