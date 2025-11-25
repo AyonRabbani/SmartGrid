@@ -6,14 +6,14 @@ export default function GridView() {
   /*   VIEWPORT-BASED GRID SIZE   */
   /********************************/
   const BUFFER = 3;
-  const CELL_HEIGHT = 28;   // keep in sync with CSS
-  const CELL_WIDTH  = 120;  // keep in sync with CSS
+  const CELL_HEIGHT = 28; // keep in sync with CSS
+  const CELL_WIDTH = 120; // keep in sync with CSS
 
   // How many rows/cols roughly fit on screen
   const visibleRows = Math.ceil(window.innerHeight / CELL_HEIGHT);
   const visibleCols = Math.ceil(window.innerWidth / CELL_WIDTH);
 
-  const initialRows = visibleRows + BUFFER;  
+  const initialRows = visibleRows + BUFFER;
   const initialCols = visibleCols + BUFFER;
 
   // Dynamic row/column counts (grow on scroll)
@@ -28,6 +28,8 @@ export default function GridView() {
       Array.from({ length: initialCols }, () => ({ raw: "", value: "" }))
     )
   );
+
+  const [clipboard, setClipboard] = useState(null);
 
   const dependencies = useRef({});
   const cellRefs = useRef({});
@@ -86,10 +88,12 @@ export default function GridView() {
 
     try {
       const result = new Function(`return (${expr})`)();
-      return typeof result === "number" && !isNaN(result) ? `${result}` : "#ERROR";
+      return typeof result === "number" && !isNaN(result)
+        ? `${result}`
+        : "#ERROR";
     } catch (err) {
       console.log("Formula eval error:", err);
-      return typeof expr === "string" ? expr : "#ERROR";
+      return "#ERROR";
     }
   }
 
@@ -169,8 +173,11 @@ export default function GridView() {
   function unRegisterDependencies(rowIndex, cellIndex) {
     const currRef = makeCellRef(rowIndex, cellIndex);
     Object.keys(dependencies.current).forEach((ref) => {
-      dependencies.current[ref] = dependencies.current[ref].filter((dep) => dep !== currRef);
-      if (dependencies.current[ref].length === 0) delete dependencies.current[ref];
+      dependencies.current[ref] = dependencies.current[ref].filter(
+        (dep) => dep !== currRef
+      );
+      if (dependencies.current[ref].length === 0)
+        delete dependencies.current[ref];
     });
   }
 
@@ -211,7 +218,8 @@ export default function GridView() {
       } else {
         const { r, c } = pos;
         try {
-          value = parseFloat(gridSnapshot[r][c].value) || gridSnapshot[r][c].value;
+          value =
+            parseFloat(gridSnapshot[r][c].value) || gridSnapshot[r][c].value;
         } catch (err) {
           value = "#INVALID_GRID_LOCATION";
         }
@@ -293,23 +301,40 @@ export default function GridView() {
   function storeSelectionArea() {
     if (!startSelectionCell || !endSelectionCell) return;
 
-    const minRow = Math.min(startSelectionCell.rowIndex, endSelectionCell.rowIndex);
-    const maxRow = Math.max(startSelectionCell.rowIndex, endSelectionCell.rowIndex);
-    const minCell = Math.min(startSelectionCell.cellIndex, endSelectionCell.cellIndex);
-    const maxCell = Math.max(startSelectionCell.cellIndex, endSelectionCell.cellIndex);
+    const minRow = Math.min(
+      startSelectionCell.rowIndex,
+      endSelectionCell.rowIndex
+    );
+    const maxRow = Math.max(
+      startSelectionCell.rowIndex,
+      endSelectionCell.rowIndex
+    );
+    const minCell = Math.min(
+      startSelectionCell.cellIndex,
+      endSelectionCell.cellIndex
+    );
+    const maxCell = Math.max(
+      startSelectionCell.cellIndex,
+      endSelectionCell.cellIndex
+    );
 
     setSelectionArea({ minRow, maxRow, minCell, maxCell });
   }
 
   useEffect(() => {
+    console.log("Selection Area triggered: ", selectionArea);
     if (selectionArea) {
-      const startEl = cellRefs.current[`${selectionArea.minRow}-${selectionArea.minCell}`];
-      const endEl = cellRefs.current[`${selectionArea.maxRow}-${selectionArea.maxCell}`];
+      const startEl =
+        cellRefs.current[`${selectionArea.minRow}-${selectionArea.minCell}`];
+      const endEl =
+        cellRefs.current[`${selectionArea.maxRow}-${selectionArea.maxCell}`];
       if (!startEl || !endEl || !gridRef.current) return;
 
       const startRect = startEl.getBoundingClientRect();
       const endRect = endEl.getBoundingClientRect();
+
       const gridRect = gridRef.current.getBoundingClientRect();
+      const { scrollTop, scrollLeft } = gridRef.current;
 
       setSelectedCSS((prevGridCSS) => {
         const updatedGridCSS = prevGridCSS.map((row, rowIndex) =>
@@ -324,8 +349,8 @@ export default function GridView() {
         );
 
         setOutlineBox({
-          top: startRect.top - gridRect.top,
-          left: startRect.left - gridRect.left,
+          top: startRect.top - gridRect.top + scrollTop,
+          left: startRect.left - gridRect.left + scrollLeft,
           width: endRect.right - startRect.left - 3,
           height: endRect.bottom - startRect.top - 3,
         });
@@ -334,7 +359,9 @@ export default function GridView() {
       });
     } else {
       setOutlineBox(null);
-      setSelectedCSS((prevGridCSS) => prevGridCSS.map((row) => row.map(() => null)));
+      setSelectedCSS((prevGridCSS) =>
+        prevGridCSS.map((row) => row.map(() => null))
+      );
     }
   }, [selectionArea]);
 
@@ -386,7 +413,7 @@ export default function GridView() {
   /********************************/
   useEffect(() => {
     const el = gridRef.current;
-    console.log("Scroll Element: ", el)
+    console.log("Scroll Element: ", el);
     if (!el) return;
 
     function handleScroll() {
@@ -399,7 +426,8 @@ export default function GridView() {
         clientWidth,
       } = el;
 
-      if (scrollHeight - (scrollTop + clientHeight) < 100) setRows((r) => r + 5);
+      if (scrollHeight - (scrollTop + clientHeight) < 100)
+        setRows((r) => r + 5);
       if (scrollWidth - (scrollLeft + clientWidth) < 200) setCols((c) => c + 3);
     }
 
@@ -411,7 +439,6 @@ export default function GridView() {
   /*  EXTEND GRID WHEN SIZE GROWS */
   /********************************/
   useEffect(() => {
-
     // Expand CSS selection mask
     setSelectedCSS((prev) => {
       const newCSS = prev.map((row) => [...row]);
@@ -431,18 +458,79 @@ export default function GridView() {
 
       // Add rows
       while (newGrid.length < rows)
-        newGrid.push(Array.from({ length: cols }, () => ({ raw: "", value: "" })));
+        newGrid.push(
+          Array.from({ length: cols }, () => ({ raw: "", value: "" }))
+        );
 
       // Extend columns
       for (let r = 0; r < newGrid.length; r++) {
-        while (newGrid[r].length < cols) newGrid[r].push({ raw: "", value: "" });
+        while (newGrid[r].length < cols)
+          newGrid[r].push({ raw: "", value: "" });
       }
 
       return newGrid;
     });
-
-
   }, [rows, cols]);
+
+  /********************************/
+  /*        COPY + PASTE          */
+  /********************************/
+  function handleKeyCommands(e) {
+    const isCtrlC = e.ctrlKey && e.key === "c";
+    const isMetaC = e.metaKey && e.key == "c";
+
+    const isCtrlV = e.ctrlKey && e.key === "v";
+    const isMetaV = e.metaKey && e.key == "v";
+
+    if (isCtrlC || isMetaC) {
+      e.preventDefault();
+      console.log("Copied selection area: ", selectionArea);
+      setClipboard(selectionArea);
+    }
+
+    if (isCtrlV || isMetaV) {
+      e.preventDefault();
+      console.log("Paste selection from cell area: ", clipboard);
+      // console.log("Starting at cell: ", editing.rowIndex, editing.cellIndex); // if selected and pasted onto same cell, this fails because editing is null
+      setGrid((prevGrid) => {
+        const gridCopy = prevGrid.map((row) => [...row]);
+        const xDist = clipboard.maxCell - clipboard.minCell;
+        const yDist = clipboard.minRow - clipboard.maxRow;
+        const rowOffset = editing.rowIndex - clipboard.minRow
+        const cellOffset = editing.cellIndex - clipboard.minCell
+        
+        let copyCell;
+        
+        for (
+          let r = 0, rC = clipboard.minRow;
+          r <= xDist, rC <= clipboard.maxRow;
+          r++, rC++
+        ) {
+          for (
+            let c = 0, cC = clipboard.minCell;
+            c <= yDist, cC <= clipboard.maxCell;
+            c++, cC++
+          ) {
+            copyCell = { ...gridCopy[rC][cC] }; // direct paste of cell values 
+            const isFormula = copyCell.raw.startsWith("=")? true: null;
+            if(isFormula){
+              const refFormula = copyCell.raw
+              const refs = extractReferences(refFormula)
+              refs.map(r => {
+                const refCoord = reverseCellRef(r)
+                const newRow = refCoord.r + rowOffset
+                const newCell = refCoord.c + cellOffset
+                const updatedRef = makeCellRef(newRow, newCell)
+                copyCell.raw = copyCell.raw.replace(r, updatedRef)
+              })
+            }       
+            gridCopy[editing.rowIndex + r][editing.cellIndex + c] = copyCell;
+          }
+        }
+        return gridCopy;
+      });
+    }
+  }
 
   /********************************/
   /*            RENDER            */
@@ -450,74 +538,86 @@ export default function GridView() {
   return (
     <div>
       {/* <TickerGrid tickers={activeTickers} /> */}
-      <div className="grid-wrapper"
-          ref={gridRef}
-      >
+      <div className="grid-wrapper" ref={gridRef}>
         <div
           className="grid-spreadsheet"
           style={{
             display: "grid",
             gridTemplateColumns: `60px repeat(${cols}, ${CELL_WIDTH}px)`,
-            gridTemplateRows: `32px repeat(${rows}, ${CELL_HEIGHT}px)`
+            gridTemplateRows: `32px repeat(${rows}, ${CELL_HEIGHT}px)`,
+          }}
+          onKeyDown={(e) => {
+            handleKeyCommands(e);
           }}
         >
           {/* Top header row: corner + column headers */}
           {Array.from({ length: cols + 1 }, (_, col) => (
             <div key={`col-header-${col}`} className="grid-col-header">
               {/* blank top-left cell */}
-              {col === 0 ? "" : col}
+              {col === 0 ? "" : col - 1}
             </div>
           ))}
 
           {/* Data rows: row header + cells */}
           {Array.from({ length: rows }, (_, rowIndex) => (
             <React.Fragment key={`row-${rowIndex}`}>
-              <div className="grid-row-header">{rowIndex + 1}</div>
-
+              <div className="grid-row-header">{rowIndex +1}</div>
               {Array.from({ length: cols }, (_, cellIndex) => {
                 const isDraggingOver =
                   selection &&
                   startSelectionCell &&
                   endSelectionCell &&
-                  rowIndex >= Math.min(
-                    startSelectionCell.rowIndex,
-                    endSelectionCell.rowIndex
-                  ) &&
-                  rowIndex <= Math.max(
-                    startSelectionCell.rowIndex,
-                    endSelectionCell.rowIndex
-                  ) &&
-                  cellIndex >= Math.min(
-                    startSelectionCell.cellIndex,
-                    endSelectionCell.cellIndex
-                  ) &&
-                  cellIndex <= Math.max(
-                    startSelectionCell.cellIndex,
-                    endSelectionCell.cellIndex
-                  );
+                  rowIndex >=
+                    Math.min(
+                      startSelectionCell.rowIndex,
+                      endSelectionCell.rowIndex
+                    ) &&
+                  rowIndex <=
+                    Math.max(
+                      startSelectionCell.rowIndex,
+                      endSelectionCell.rowIndex
+                    ) &&
+                  cellIndex >=
+                    Math.min(
+                      startSelectionCell.cellIndex,
+                      endSelectionCell.cellIndex
+                    ) &&
+                  cellIndex <=
+                    Math.max(
+                      startSelectionCell.cellIndex,
+                      endSelectionCell.cellIndex
+                    );
 
-                const safeRow = grid[rowIndex] || []; 
-                const cell = safeRow[cellIndex] || {raw: "", value: ""}; 
+                const safeRow = grid[rowIndex] || [];
+                const cell = safeRow[cellIndex] || { raw: "", value: "" };
 
                 return (
                   <div
                     key={`${rowIndex}-${cellIndex}`}
-                    ref={(el) => (cellRefs.current[`${rowIndex}-${cellIndex}`] = el)}
+                    ref={(el) =>
+                      (cellRefs.current[`${rowIndex}-${cellIndex}`] = el)
+                    }
                     className={
                       "grid-cell " +
                       (hover?.row === rowIndex ? "cross-row " : "") +
                       (hover?.col === cellIndex ? "cross-col " : "") +
-                      (hover?.row === rowIndex && hover?.col === cellIndex ? "cross-focus " : "") +
-                      (selectedCSS[rowIndex] && selectedCSS[rowIndex][cellIndex] ? "selected-cell " : "") +
+                      (hover?.row === rowIndex && hover?.col === cellIndex
+                        ? "cross-focus "
+                        : "") +
+                      (selectedCSS[rowIndex] && selectedCSS[rowIndex][cellIndex]
+                        ? "selected-cell "
+                        : "") +
                       (pickMode &&
-                        editing &&
-                        editing.rowIndex === rowIndex &&
-                        editing.cellIndex === cellIndex
+                      editing &&
+                      editing.rowIndex === rowIndex &&
+                      editing.cellIndex === cellIndex
                         ? "formula-pick-active "
                         : "")
                     }
                     style={{
-                      backgroundColor: isDraggingOver ? "rgba(40,63,43,1)" : undefined,
+                      backgroundColor: isDraggingOver
+                        ? "rgba(40,63,43,1)"
+                        : undefined,
                     }}
                     onMouseDown={(e) => {
                       // 1) Dedicated pick mode (F2)
@@ -541,7 +641,17 @@ export default function GridView() {
                       setStartSelectionCell({ rowIndex, cellIndex });
                     }}
                     onMouseUp={() => {
+                      console.log("Selection on mouse up: ", selection);
                       if (selection && endSelectionCell) storeSelectionArea();
+                      if (selection && !endSelectionCell) {
+                        setEndSelectionCell({ rowIndex, cellIndex });
+                        setSelectionArea({
+                          minRow: startSelectionCell.rowIndex,
+                          maxRow: endSelectionCell?.rowIndex || rowIndex,
+                          minCell: startSelectionCell.cellIndex,
+                          maxCell: endSelectionCell?.cellIndex || cellIndex,
+                        });
+                      }
                       setSelection(null);
                       setStartSelectionCell(null);
                       setEndSelectionCell(null);
