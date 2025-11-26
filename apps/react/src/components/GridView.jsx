@@ -1,5 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./GridView.css";
+import {
+  createChart,
+  CandlestickSeries,
+  HistogramSeries,
+} from "lightweight-charts";
 
 export default function GridView() {
   /********************************/
@@ -842,12 +847,151 @@ export default function GridView() {
 /*         Ticker Panel         */
 /********************************/
 function TickerPanel({ tickers }) {
+  const chartContainerRef = useRef(null);
+  const chartRef = useRef(null);
+  const candleRef = useRef(null);
+  const volumeRef = useRef(null);
+
+  const [activeTicker, setActiveTicker] = useState(null);
+  const [chartData, setChartData] = useState(null);
+
+  useEffect(() => {
+    if (!activeTicker) return; // <-- fix
+
+    async function fetchData() {
+      console.log("Fetching:", activeTicker);
+
+      const url = `https://api.massive.com/v2/aggs/ticker/${activeTicker}/range/1/day/2025-01-09/2025-11-25?adjusted=true&sort=asc&apiKey=ANeN7iKkqpD0bW2RcI_2xWVbNljnDCZ5`;
+
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (json.resultsCount === 0) {
+        setChartData([]); // <-- stores empty array
+      } else if (Array.isArray(json.results)) {
+        setChartData(json.results);
+      }
+    }
+
+    fetchData();
+  }, [activeTicker]);
+
+  useEffect(() => {
+    if (chartData) {
+      const formatted = chartData.map((d) => ({
+        time: d.t / 1000, // convert ms → seconds
+        open: d.o,
+        high: d.h,
+        low: d.l,
+        close: d.c,
+      }));
+
+      candleRef.current.setData(formatted);
+
+      const volume = chartData.map((d) => ({
+        time: d.t / 1000,
+        value: d.v,
+        color: d.c >= d.o ? "#26a69aAA" : "#ef5350AA",
+      }));
+
+      volumeRef.current.setData(volume);
+
+      chartRef.current.timeScale().fitContent();
+    }
+  }, [chartData]);
+
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+
+    // Create chart once
+    if (!chartRef.current) {
+      const chart = createChart(chartContainerRef.current, {
+        width: chartContainerRef.current.clientWidth,
+        height: chartContainerRef.current.clientHeight,
+        layout: {
+          background: { type: "solid", color: "#0f0f0f" },
+          textColor: "#e6e6e6",
+        },
+
+        grid: {
+          vertLines: { color: "rgba(255,255,255,0.05)" },
+          horzLines: { color: "rgba(255,255,255,0.05)" },
+        },
+
+        crosshair: {
+          mode: 1,
+          vertLine: { color: "rgba(255,255,255,0.3)", width: 1 },
+          horzLine: { color: "rgba(255,255,255,0.3)", width: 1 },
+        },
+
+        rightPriceScale: {
+          borderColor: "rgba(255,255,255,0.15)",
+        },
+
+        timeScale: {
+          borderColor: "rgba(255,255,255,0.15)",
+        },
+      });
+
+      chartRef.current = chart;
+
+      // Candles
+      candleRef.current = chart.addSeries(CandlestickSeries, {
+        priceScaleId: "right",
+
+        upColor: "#3dd68c",
+        downColor: "#ff4d4d",
+
+        borderUpColor: "#3dd68c",
+        borderDownColor: "#ff4d4d",
+
+        wickUpColor: "#3dd68c",
+        wickDownColor: "#ff4d4d",
+
+        borderVisible: true,
+      });
+
+      volumeRef.current = chart.addSeries(HistogramSeries, {
+        priceScaleId: "volume",
+        priceFormat: { type: "volume" },
+        scaleMargins: { top: 0.72, bottom: 0 },
+      });
+    }
+
+    // -------------- 🔥 Add Resize Listener ----------------
+    function handleResize() {
+      if (chartContainerRef.current) {
+        chartRef.current.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+          height: chartContainerRef.current.clientHeight,
+        });
+
+        chartRef.current.timeScale().fitContent();
+      }
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <div>
-      <h1>Ticker list:</h1>
-      {tickers.map((t, key) => (
-        <div key={key}>{t}</div>
-      ))}
+    <div className="ticker-panel-wrapper">
+      <div className="nav">
+        {tickers.map((t) => (
+          <div key={t}>
+            <h3 className="ticker" onClick={() => setActiveTicker(t)}>
+              {t}
+            </h3>
+          </div>
+        ))}
+      </div>
+      <div
+        className="chart"
+        ref={chartContainerRef}
+        style={{ width: "100%", height: "100%" }}
+      />
     </div>
   );
 }

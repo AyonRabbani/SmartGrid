@@ -13,11 +13,6 @@
   "devDependencies": {
     "electron": "^39.2.0"
   },
-  "dependencies": {
-    "ag-grid": "^18.1.2",
-    "ag-grid-community": "^34.3.1",
-    "ag-grid-react": "^34.3.1"
-  },
   "workspaces": [
     "apps/*",
     "packages/*"
