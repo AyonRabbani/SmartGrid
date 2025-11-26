@@ -299,8 +299,39 @@
 }
 
 .chart {
-  flex: 1;          /* <-- this gives REAL HEIGHT */
-  height: 100%;     /* ensures measurable height */
+  flex: 1;            /* chart fills available vertical space */
+  height: auto;       /* REMOVE height: 100%! */
+  min-height: 0;      /* allow shrinking in flexbox */
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  height: 100%;       /* take panel height */
+}
+
+.metrics {
+  padding: 8px;
+  background: #111;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: row;
+}
+
+.position-summary {
+  padding: 8px;
+  background: #111;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: row;
+}
+
+.macro-news {
+  padding: 8px;
+  background: #111;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: row;
 }
 
 .ticker-panel-wrapper .nav{

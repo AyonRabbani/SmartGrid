@@ -987,11 +987,36 @@ function TickerPanel({ tickers }) {
           </div>
         ))}
       </div>
-      <div
-        className="chart"
-        ref={chartContainerRef}
-        style={{ width: "100%", height: "100%" }}
-      />
+      <div className="summary">
+        <div
+          className="chart"
+          ref={chartContainerRef}
+          style={{ width: "100%", height: "100%" }}
+        />
+        <div className="position-summary">
+          <div>Position P/L</div>
+          <div>Probability of Strike</div>
+          <div>DTE</div>
+          <div>ROIC</div>
+          <div>Greeks</div>
+          <div>Early Warning Price</div>
+          <div>Current Strategy</div>
+        </div>
+        <div className="metrics">
+          <div>Momentum</div>
+          <div>Recent Floor</div>
+          <div>RV vs IV</div>
+          <div>Volatility Structure</div>
+          <div>Put/Call Skew</div>
+          <div>Options Barriers</div>
+          <div>Volatility Regime</div>
+        </div>
+        <div className="macro-news">
+          <div>Upcoming Economic Activity</div>
+          <div>News</div>
+          <div>Sentiment</div>
+        </div>
+      </div>
     </div>
   );
 }
