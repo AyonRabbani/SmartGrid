@@ -298,52 +298,228 @@
   flex-direction: column;
 }
 
-.chart {
-  flex: 1;            /* chart fills available vertical space */
-  height: auto;       /* REMOVE height: 100%! */
-  min-height: 0;      /* allow shrinking in flexbox */
+.ticker-panel-wrapper .nav {
+  display: flex;
+  align-items: center;
+  margin: 5px 8px;
+  gap: 8px;
 }
 
-.summary {
-  display: flex;
-  flex-direction: column;
-  height: 100%;       /* take panel height */
-}
-
-.metrics {
-  padding: 8px;
-  background: #111;
-  border-top: 1px solid #333;
-  display: flex;
-  flex-direction: row;
-}
-
-.position-summary {
-  padding: 8px;
-  background: #111;
-  border-top: 1px solid #333;
-  display: flex;
-  flex-direction: row;
-}
-
-.macro-news {
-  padding: 8px;
-  background: #111;
-  border-top: 1px solid #333;
-  display: flex;
-  flex-direction: row;
-}
-
-.ticker-panel-wrapper .nav{
-  display: flex;
+.ticker-panel-wrapper .nav h4 {
+  font-size: 15px;
 }
 
 .ticker-panel-wrapper .ticker {
   color: #9afcb7;
   font-size: 13px;
-  margin: 5px;
+  margin: 0 4px;
+  cursor: pointer;
 }
 
 .ticker-panel-wrapper .ticker:hover {
   text-decoration: underline;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* chart + settings as one seamless block */
+.chart-settings {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #0f0f0f;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #1a1a1a;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.chart-settings p {
+  margin-right: 6px;
+  font-size: 12px;
+  color: #888;
+}
+
+.chart-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-settings input {
+  background-color: #161616;
+  border: 1px solid #333;
+  padding: 2px 6px;
+  color: #eee;
+  width: 90px;
+  height: 24px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* controls */
+.chart-interval-controls,
+.chart-range-controls {
+  display: flex;
+  align-items: center;
+}
+
+.chart-interval-controls button,
+.chart-range-controls button {
+  margin: 0 3px;
+  background: #151515;
+  color: #ff8c00;
+  border: 1px solid #262626;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: "Chakra Petch", sans-serif;
+}
+
+.chart-interval-controls button:hover,
+.chart-range-controls button:hover {
+  background: #1f1f1f;
+}
+
+.active-btn {
+  background: #2f2f2f !important;
+  border-color: #ff8c00 !important;
+  color: #ffe2b0 !important;
+}
+
+/* charts */
+
+.chart-container {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  height: 300px;
+  margin-top: 0;
+}
+
+.chart {
+  flex: 1;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+}
+
+/* bottom sections */
+.position-summary,
+/*******************************************
+    NEW METRICS BLOCK — Clean + Readable
+********************************************/
+.metrics {
+  padding: 10px 14px;
+  background: #101010;
+  border-top: 1px solid #333;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  font-family: "Chakra Petch", sans-serif;
+}
+
+/* each metric item with dropdown */
+.metric-item {
+  background: #151515;
+  border: 1px solid #262626;
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #e6e6e6;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.metric-item:hover {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+/* summary row with label + value */
+.metric-item summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.metric-item summary::-webkit-details-marker {
+  display: none; /* remove default arrow */
+}
+
+/* metric label */
+.metric-label {
+  color: #9dc4ff; /* subtle blue tint for category labels */
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* metric value */
+.metric-value {
+  color: #ffe9a3; /* warm highlight color */
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* explanation text under the dropdown */
+.metric-expl {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #bcbcbc;
+  padding-left: 4px;
+  padding-right: 4px;
+  opacity: 0.95;
+}
+
+
+/* probability-of-touch panel */
+.touch-panel {
+  padding: 8px 10px;
+  background: #101010;
+  border-top: 1px solid #222;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.touch-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.touch-inputs span {
+  color: #9b9b9b;
+}
+
+.touch-inputs input {
+  background: #161616;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: #e6e6e6;
+  font-size: 11px;
+  width: 80px;
+}
+
+.touch-output {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.touch-output strong {
+  color: #ffb347;
 }
